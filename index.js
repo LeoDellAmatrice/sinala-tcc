@@ -91,7 +91,7 @@ function escreverValor(valor) {
         statusTitle.classList.add('status-alert');
         statusDesc.textContent = 'Cefaleia, Vertigens e tendências ao desmaio';
         
-    } else if (valorNum < 1000) {
+    } else {
         statusTitle.textContent = 'Alto Risco';
         statusTitle.classList.add('status-high-risk');
         statusDesc.textContent = 'Aceleração da respiração, sincope e possivel morte';
@@ -195,4 +195,5 @@ window.addEventListener('beforeunload', function () {
     if (clientWeb.isConnected()) {
         clientWeb.disconnect();
     }
+
 });
