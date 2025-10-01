@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinala - Monitoramento</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <!-- Notificação personalizada -->
+    <div class="custom-notification" id="customNotification">
+        <button class="notification-close" id="notificationClose">&times;</button>
+        <div class="notification-title" id="notificationTitle">Alerta!</div>
+        <div class="notification-body" id="notificationBody"></div>
+    </div>
+
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Sinala</h1>
+            <nav class="nav">
+                
+            </nav>
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Desconectado</span>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main">
+        <div class="container">
+            <div class="welcome-section">
+                <h1 class="welcome-title">Bem-vindo ao Sinala</h1>
+                <p class="welcome-subtitle">Sistema de monitoramento em tempo real</p>
+            </div>
+            
+            <div class="dashboard">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Valor do PPM</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="value-display" id="valor-ppm">--</div>
+                        <div class="value-label">Partes por milhão</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Nível</h2>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="status-title" id="status-ppm-title">--</h3>
+                        <p class="status-description" id="status-ppm">Aguardando dados...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2023 Sinala - Todos os direitos reservados</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.0/mqttws31.js" integrity="sha512-e6nMrZX9Li26UyD0znvtLkki+E40EzsK0CGUt+EHdC8cAxlakzJfbsgChf+M4df1P/hxKT8DN0Q7ktK1QnOtWg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="index.js"></script>
+</body>
+</html>
