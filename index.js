@@ -126,7 +126,7 @@ function connectToBroker() {
     updateConnectionStatus('connecting');
 
     clientWeb.connect({
-        useSSL: true,
+        useSSL: false,
         timeout: 10,
         onSuccess: function () {
             console.log('Conectado ao Broker MQTT');
@@ -210,6 +210,3 @@ window.addEventListener('beforeunload', function () {
     }
 
 });
-
-
-
