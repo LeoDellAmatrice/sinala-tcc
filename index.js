@@ -1,6 +1,6 @@
 // Configurações MQTT
 const ClientId = 'esp32_' + Math.floor(Math.random() * 10000);
-const clientWeb = new Paho.MQTT.Client("broker.emqx.io", 8084, "/mqtt", ClientId);
+const clientWeb = new Paho.MQTT.Client("test.mosquitto.org", 8084, "/mqtt", ClientId);
 
 // Variáveis de controle
 let isConnected = false;
@@ -210,3 +210,4 @@ window.addEventListener('beforeunload', function () {
     }
 
 });
+
