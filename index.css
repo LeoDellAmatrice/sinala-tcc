@@ -58,7 +58,9 @@ body {
 
 .header img {
     width: 100px;
-    border-radius: 8px;
+    border-radius: 50px;
+    background-color: white;
+    padding: 10px;
 }
 
 .logo {
@@ -339,4 +341,3 @@ body {
     }
 
 }
-
