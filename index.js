@@ -1,6 +1,6 @@
 // Configurações MQTT
 const ClientId = 'esp32_' + Math.floor(Math.random() * 10000);
-const clientWeb = new Paho.MQTT.Client("broker.hivemq.com", 8000, "/mqtt", ClientId);
+const clientWeb = new Paho.MQTT.Client("broker.hivemq.com", 8884, "/mqtt", ClientId);
 
 // Variáveis de controle
 let isConnected = false;
@@ -17,7 +17,7 @@ const notificationTitle = document.getElementById('notificationTitle');
 const notificationBody = document.getElementById('notificationBody');
 const notificationClose = document.getElementById('notificationClose');
 
-// Função para atualizar status de conexão
+// Atualizar status de conexão
 function updateConnectionStatus(status) {
     statusIndicator.className = 'status-indicator';
     isConnected = status === 'connected';
@@ -26,7 +26,7 @@ function updateConnectionStatus(status) {
         case 'connected':
             statusIndicator.classList.add('connected');
             statusText.textContent = 'Conectado';
-            reconnectAttempts = 0; // Resetar tentativas em conexão bem-sucedida
+            reconnectAttempts = 0; // Resetar tentativas
             break;
         case 'connecting':
             statusIndicator.classList.add('connecting');
@@ -39,7 +39,7 @@ function updateConnectionStatus(status) {
     }
 }
 
-// Função para mostrar notificação personalizada
+// Notificação personalizada
 function showCustomNotification(title, body, isCritical = false) {
     notificationTitle.textContent = title;
     notificationBody.textContent = body;
@@ -54,11 +54,8 @@ function showCustomNotification(title, body, isCritical = false) {
 
     customNotification.style.display = 'block';
 
-    // Auto-ocultar após 10 segundos para alertas não críticos
     if (!isCritical) {
-        setTimeout(() => {
-            customNotification.style.display = 'none';
-        }, 3000);
+        setTimeout(() => { customNotification.style.display = 'none'; }, 3000);
     }
 }
 
@@ -67,18 +64,15 @@ notificationClose.addEventListener('click', function () {
     customNotification.style.display = 'none';
 });
 
-// Função para escrever valor e atualizar status
+// Atualizar valor do PPM
 function escreverValor(valor) {
     const valorNum = parseInt(valor);
-    
     if (Number.isNaN(valorNum)) return;
 
     document.getElementById('valor-ppm').textContent = valorNum;
-
     const statusTitle = document.getElementById('status-ppm-title');
     const statusDesc = document.getElementById('status-ppm');
 
-    // Resetar classes de status
     statusTitle.className = 'status-title';
 
     if (valorNum < 10) {
@@ -93,14 +87,12 @@ function escreverValor(valor) {
         statusTitle.textContent = 'Alerta';
         statusTitle.classList.add('status-alert');
         statusDesc.textContent = 'Cefaleia, Vertigens e tendências ao desmaio';
-        
     } else {
         statusTitle.textContent = 'Alto Risco';
         statusTitle.classList.add('status-high-risk');
-        statusDesc.textContent = 'Aceleração da respiração, sincope e possivel morte';
+        statusDesc.textContent = 'Aceleração da respiração, sincope e possível morte';
         showCustomNotification('ALERTA CRÍTICO: Alto Risco', 'Níveis de CO2 perigosos detectados! Tome medidas imediatas para ventilar a área.', true);
 
-        // Tentar usar notificação do navegador se disponível
         if ("Notification" in window && Notification.permission === "granted") {
             new Notification('Alerta: Gás detectado', {
                 body: 'Níveis de CO2 perigosos detectados! Tome medidas imediatas para ventilar a área.',
@@ -111,22 +103,17 @@ function escreverValor(valor) {
     }
 }
 
-// Função para conectar ao broker
+// Conectar ao broker
 function connectToBroker() {
-    if (clientWeb.isConnected()) {
-        console.log("Já está conectado — não tentando conectar.");
-        return;
-    }
-
-    if (clientWeb._disconnected !== true && clientWeb._connectTimeout) {
-        console.log("Conexão ainda em andamento — evitando chamada duplicada.");
+    if (clientWeb.isConnected() || clientWeb._connectTimeout) {
+        console.log("Já está conectado ou conexão em andamento — não tentando conectar.");
         return;
     }
 
     updateConnectionStatus('connecting');
 
     clientWeb.connect({
-        useSSL: false,
+        useSSL: true,
         timeout: 10,
         onSuccess: function () {
             console.log('Conectado ao Broker MQTT');
@@ -144,7 +131,7 @@ function connectToBroker() {
     });
 }
 
-// Função para tentar reconexão
+// Reconectar com controle de tentativas
 function attemptReconnect() {
     if (reconnectAttempts >= maxReconnectAttempts) {
         console.log('Número máximo de tentativas de reconexão atingido');
@@ -155,18 +142,18 @@ function attemptReconnect() {
     reconnectAttempts++;
     console.log(`Tentativa de reconexão ${reconnectAttempts}/${maxReconnectAttempts}`);
 
-    reconnectTimer = setTimeout(function () {
-        connectToBroker();
-    }, reconnectInterval);
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+
+    reconnectTimer = setTimeout(() => { connectToBroker(); }, reconnectInterval);
 }
 
-// Configurar callbacks do cliente MQTT
+// Callbacks MQTT
 clientWeb.onConnectionLost = function (responseObject) {
     if (responseObject.errorCode !== 0) {
         console.log('Conexão perdida: ' + responseObject.errorMessage);
         updateConnectionStatus('disconnected');
 
-        if (responseObject.errorCode !== 7) { // 7 = desconexão manual
+        if (responseObject.errorCode !== 7) {
             attemptReconnect();
         }
     }
@@ -177,22 +164,20 @@ clientWeb.onMessageArrived = function (message) {
     escreverValor(message.payloadString);
 };
 
-// Callbacks adicionais para melhor controle
 clientWeb.onConnected = function (reconnect, uri) {
     console.log('Callback onConnected: reconnect=' + reconnect + ', uri=' + uri);
 };
 
-// Iniciar conexão quando a página carregar
+// Inicialização
 document.addEventListener('DOMContentLoaded', function () {
     connectToBroker();
 
-    // Solicitar permissão para notificações
     if ("Notification" in window && Notification.permission === "default") {
         Notification.requestPermission();
     }
 });
 
-// Tentar reconectar quando a janela ganhar foco (usuário retornou à aba)
+// Reconectar quando aba ganhar foco
 window.addEventListener('focus', function () {
     if (!clientWeb.isConnected()) {
         console.log("Janela em foco - reconectar");
@@ -200,13 +185,8 @@ window.addEventListener('focus', function () {
     }
 });
 
-// Limpar timer quando a página for fechada
+// Limpar timers e desconectar ao fechar página
 window.addEventListener('beforeunload', function () {
-    if (reconnectTimer) {
-        clearTimeout(reconnectTimer);
-    }
-    if (clientWeb.isConnected()) {
-        clientWeb.disconnect();
-    }
-
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    if (clientWeb.isConnected()) clientWeb.disconnect();
 });
