@@ -56,6 +56,10 @@ body {
     align-items: center;
 }
 
+.header img {
+    width: 100px;
+}
+
 .logo {
     font-size: 1.8rem;
     font-weight: 700;
@@ -332,4 +336,5 @@ body {
         justify-content: center;
         margin-top: 10px;
     }
+
 }
