@@ -1,6 +1,6 @@
 // Configurações MQTT
 const ClientId = 'esp32_' + Math.floor(Math.random() * 10000);
-const clientWeb = new Paho.MQTT.Client('broker.hivemq.com', 8884, '/mqtt', ClientId);
+const clientWeb = new Paho.MQTT.Client("broker.emqx.io", 8084, "/mqtt", ClientId);
 
 // Variáveis de controle
 let isConnected = false;
@@ -72,7 +72,7 @@ function escreverValor(valor) {
     const valorNum = parseInt(valor);
     
     if (Number.isNaN(valorNum)) return;
-    
+
     document.getElementById('valor-ppm').textContent = valorNum;
 
     const statusTitle = document.getElementById('status-ppm-title');
@@ -113,7 +113,15 @@ function escreverValor(valor) {
 
 // Função para conectar ao broker
 function connectToBroker() {
-    if (isConnected) return;
+    if (clientWeb.isConnected()) {
+        console.log("Já está conectado — não tentando conectar.");
+        return;
+    }
+
+    if (clientWeb._disconnected !== true && clientWeb._connectTimeout) {
+        console.log("Conexão ainda em andamento — evitando chamada duplicada.");
+        return;
+    }
 
     updateConnectionStatus('connecting');
 
@@ -123,6 +131,8 @@ function connectToBroker() {
         onSuccess: function () {
             console.log('Conectado ao Broker MQTT');
             updateConnectionStatus('connected');
+            reconnectAttempts = 0;
+
             clientWeb.subscribe('sinala/ppm/value');
             showCustomNotification('Conexão Estabelecida', 'Conectado ao servidor MQTT com sucesso.');
         },
@@ -184,9 +194,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Tentar reconectar quando a janela ganhar foco (usuário retornou à aba)
 window.addEventListener('focus', function () {
-    if (!isConnected && reconnectAttempts < maxReconnectAttempts) {
-        console.log('Janela em foco - tentando reconectar');
-        connectToBroker();
+    if (!clientWeb.isConnected()) {
+        console.log("Janela em foco - reconectar");
+        attemptReconnect();
     }
 });
 
