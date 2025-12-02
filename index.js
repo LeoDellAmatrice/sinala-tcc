@@ -1,6 +1,6 @@
 // Configurações MQTT
 const ClientId = 'esp32_' + Math.floor(Math.random() * 10000);
-const clientWeb = new Paho.MQTT.Client('broker.hivemq.com', 8884, ClientId);
+const clientWeb = new Paho.MQTT.Client('broker.hivemq.com', 8884, '/mqtt', ClientId);
 
 // Variáveis de controle
 let isConnected = false;
@@ -70,6 +70,9 @@ notificationClose.addEventListener('click', function () {
 // Função para escrever valor e atualizar status
 function escreverValor(valor) {
     const valorNum = parseInt(valor);
+    
+    if (Number.isNaN(valorNum)) return;
+    
     document.getElementById('valor-ppm').textContent = valorNum;
 
     const statusTitle = document.getElementById('status-ppm-title');
